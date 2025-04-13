@@ -1,0 +1,5 @@
+venv/
+__pycache__/
+*.pyc
+llms_full.txt
+sklearn_gemini_vectorstore.parquet
