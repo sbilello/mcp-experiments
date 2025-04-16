@@ -1,12 +1,14 @@
 import os
-from langchain_core.tools import tool
+from mcp.server.fastmcp import FastMCP
 # Ensure necessary imports are present if defining in a separate file
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import SKLearnVectorStore
 
 # Define the path to your persisted vector store
 # Make sure this matches the filename used in your creation script
+PATH = os.getcwd()
 PERSIST_PATH = os.path.join(os.getcwd(), "sklearn_gemini_vectorstore.parquet")
+mcp = FastMCP("LangGraph-Docs-MCP-Server")
 
 # Check if the vector store file exists before defining the tool,
 # or handle potential errors inside the tool if it might not exist yet.
@@ -15,7 +17,7 @@ if not os.path.exists(PERSIST_PATH):
     # You could raise an error here, or let the tool fail later
 
 
-@tool
+@mcp.tool(name="LangGraph-Docs-Query")
 def langgraph_query_tool(query: str):
     """
     Query the LangGraph documentation using a retriever backed by
@@ -63,6 +65,32 @@ def langgraph_query_tool(query: str):
         # Catching other potential errors (e.g., API key issues, loading issues)
         print(f"An error occurred while querying the vector store: {e}")
         return f"Error: Could not query LangGraph documentation due to an internal issue: {e}"
+
+# The @mcp.resource() decorator is meant to map a URI pattern to a function that provides the resource content
+@mcp.resource("docs://langgraph/full")
+def get_all_langgraph_docs() -> str:
+    """
+    Get all the LangGraph documentation. Returns the contents of the file llms_full.txt,
+    which contains a curated set of LangGraph documentation (~300k tokens). This is useful
+    for a comprehensive response to questions about LangGraph.
+
+    Args: None
+
+    Returns:
+        str: The contents of the LangGraph documentation
+    """
+
+    # Local path to the LangGraph documentation
+    doc_path = PATH + "/llms_full.txt"
+    try:
+        with open(doc_path, 'r') as file:
+            return file.read()
+    except Exception as e:
+        return f"Error reading log file: {str(e)}"
+
+if __name__ == "__main__":
+    # Initialize and run the server
+    mcp.run(transport='stdio')
 
 # Example usage (if run in the same file/context for testing):
 # if __name__ == '__main__':
