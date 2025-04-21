@@ -1,0 +1,49 @@
+Hi Copilot, let's set up a Python project in VS Code for a tool that converts Swagger/OpenAPI specs to GraphQL schemas decorated with Apollo Connector directives.
+
+**The Plan:**
+- **Orchestration:** Use the Google Agent Development Kit (ADK) Python library (`google-adk`).
+- **Architecture:** A main ADK `SequentialAgent` coordinating custom Python functions wrapped as ADK `FunctionTool`s (Parser -> Generator -> Decorator -> Validator).
+- **LLM:** Use direct API calls to the Gemini API via the `google-generativeai` library inside the Decorator tool.
+- **Environment:** Use a Python virtual environment and manage the Gemini API key via a `.env` file.
+- **Execution:** Run the tool from the VS Code integrated terminal.
+
+Please generate the code/content for the following components.
+
+**1. Project Setup Files:**
+
+* Generate the content for `requirements.txt` including: `google-adk`, `google-generativeai`, `graphql-core`, `PyYAML`, `openapi-spec-validator`, `python-dotenv`.
+* Generate the content for a standard Python `.gitignore` file.
+* Show the structure for a `.env` file (just the variable name).
+
+**2. ADK Agent Orchestration (`main.py`):**
+
+* Generate the Python code for `main.py`.
+* Include imports for `SequentialAgent`, `FunctionTool` from `google.adk.agents` and `google.adk.tools`.
+* Assume tool functions `parse_swagger`, `generate_schema`, `decorate_schema`, `validate_schema` exist in a `tools` module.
+* Show loading the `GEMINI_API_KEY` from `.env` using `dotenv`.
+* Define `FunctionTool` instances for each of the four tools.
+* Define the `SequentialAgent` (`conversion_agent`) using these tools in order.
+* Add a basic `if __name__ == "__main__":` block demonstrating argument parsing (e.g., using `argparse` for `--input` swagger file path) and how you might conceptually initialize state and invoke the agent (keep the ADK runner part simple/conceptual, maybe just printing the agent definition or a placeholder for the run command).
+
+**3. Tool Implementation Skeletons (`tools/` directory):**
+
+* Generate the content for `tools/parser.py`. Include a skeleton function `parse_swagger(state: dict) -> dict` with imports for `yaml` and `openapi_spec_validator`. Add comments outlining logic: load YAML, validate spec, extract relevant data, return updated state.
+* Generate the content for `tools/generator.py`. Include a skeleton function `generate_schema(state: dict) -> dict` with imports for `graphql`. Add comments outlining logic: take parsed Swagger data from state, generate basic GraphQL schema string, return updated state.
+* Generate the content for `tools/decorator.py`. Include a skeleton function `decorate_schema(state: dict) -> dict` with imports for `graphql` and `google.generativeai`. Add comments outlining logic:
+    * Get basic schema and connector info from state.
+    * Configure `google.generativeai` client using API key.
+    * Parse schema using `graphql-core`.
+    * Iterate through schema elements (fields/types).
+    * For each element: Map back to Swagger, construct prompt for Gemini API (including element def, Swagger context, connector info, optionally mentioning where RAG context would go), make API call using `genai_client.generate_content`, parse LLM response for directive, apply directive to schema.
+    * Return updated state with decorated schema.
+* Generate the content for `tools/validator.py`. Include a skeleton function `validate_schema(state: dict) -> dict` with imports for `graphql`. Add comments outlining logic: get final schema from state, use `graphql.build_schema` and `graphql.validate`, return updated state with validation results.
+* Generate an empty `tools/__init__.py` file.
+
+**4. VS Code Task (`.vscode/tasks.json`):**
+
+* Generate the JSON content for a `.vscode/tasks.json` file.
+* Define a task named "Run Swagger-to-GraphQL Converter".
+* Configure it to execute `main.py` using the Python interpreter from a `.venv` folder (e.g., `${workspaceFolder}/.venv/bin/python`).
+* Make the task prompt the user for the input Swagger file path using a VS Code input variable (e.g., `${input:swaggerFilePath}`).
+
+Please generate these pieces clearly. I will fill in the detailed logic within the tool functions and handle the full ADK runner setup and error handling.
