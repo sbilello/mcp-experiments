@@ -1,0 +1,51 @@
+
+# Apollo Connector directives
+directive @connector(
+  type: String!
+  name: String
+  url: String
+  introspection: Boolean
+  schema: String
+  transforms: [String]
+) on OBJECT | FIELD_DEFINITION
+
+directive @tag(
+  name: String!
+) on FIELD_DEFINITION
+
+directive @provides(
+  fields: String!
+) on FIELD_DEFINITION
+
+# Generated GraphQL schema from Swagger/OpenAPI spec type Query {
+  products: [Product]
+  products_{id}: Product
+  orders: [Order]
+}
+
+type Product {
+  id: Int
+  name: String
+  description: String
+  price: Float
+  category: String
+  inventory: Int
+  @connector(type: "rest")
+}
+
+type Order {
+  id: Int
+  customer_id: Int
+  order_date: String
+  status: String
+  items: [OrderItem]
+  total_amount: Float
+  @connector(type: "rest")
+}
+
+type OrderItem {
+  product_id: Int
+  quantity: Int
+  price: Float
+  @connector(type: "rest")
+}
